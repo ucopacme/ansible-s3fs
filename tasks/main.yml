@@ -1,0 +1,3 @@
+---
+# tasks file for s3fs
+- include: "{{ansible_os_family}}_install.yml"

@@ -1,0 +1,63 @@
+---
+- name: "get ec2 facts"
+  action: ec2_facts
+
+- name: "install basic packages"
+  action: >
+    {{ ansible_pkg_mgr }} name={{ item }} state=latest update_cache=yes
+  with_items:
+    - automake
+    - fuse
+    - fuse-devel
+    - gcc-c++
+    - git
+    - libcurl-devel
+    - libxml2-devel
+    - make
+    - openssl-devel
+
+- name: "git s3fs source"
+  git:
+    repo: https://github.com/s3fs-fuse/s3fs-fuse.git
+    dest: /tmp/s3fs-fuse
+
+- name: "autogen.sh"
+  shell: ./autogen.sh
+  args:
+    chdir: /tmp/s3fs-fuse
+
+- name: "configure"
+  shell: ./configure
+  args:
+    chdir: /tmp/s3fs-fuse
+
+# make the default target
+- name: s3fs make from source
+  make:
+    chdir: /tmp/s3fs-fuse
+
+# make install target as root
+- name: s3fs make install from source
+  make:
+    chdir: /tmp/s3fs-fuse
+    target: install
+  become: yes
+
+- name: remove source code
+  shell: rm -rf /tmp/s3fs-fuse
+
+- name: create mount point for s3 bucket
+  file:
+    path: "{{ mount_dir }}"
+    owner: "{{ mount_owner }}"
+    group: "{{ mount_group }}"
+    state: directory
+    mode: 0770
+
+- name: mount s3 bucket
+  mount:
+    path: "{{ mount_dir }}"
+    src: "{{ bucket }}"
+    fstype: "{{ mount_type }}"
+    opts: "{{ mount_opt }}"
+    state: mounted
