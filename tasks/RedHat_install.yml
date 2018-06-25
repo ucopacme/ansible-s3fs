@@ -49,10 +49,10 @@
 - name: create mount point for s3 bucket
   file:
     path: "{{ mount_dir }}"
-    owner: "{{ mount_owner }}"
-    group: "{{ mount_group }}"
+    #owner: "{{ mount_owner }}"
+    #group: "{{ mount_group }}"
     state: directory
-    mode: 0770
+    #mode: 0770
 
 - name: mount s3 bucket
   mount:
@@ -61,3 +61,5 @@
     fstype: "{{ mount_type }}"
     opts: "{{ mount_opt }}"
     state: mounted
+
+# do we need user_allow_other /etc/fuse.conf ?
